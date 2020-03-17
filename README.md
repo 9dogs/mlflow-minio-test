@@ -1,6 +1,8 @@
 # mlflow-minio-test
 Logging MLFlow artifact to MinIO storage using S3 protocol.
 
+TLDR: run `docker-compose up`. `experiment` service fails and `patched_experiment` does not.
+
 Test script (`mlflow_test.py`) tries to log artifact to on-premise MinIO storage using S3 protocol but without a patch 
 fails with an exception:
 ```
