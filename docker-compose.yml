@@ -1,0 +1,51 @@
+version: "3"
+
+services:
+  postgres:
+    image: postgres:12.2
+    ports:
+      - "5432:5432"
+    environment: 
+      - "POSTGRES_USER=mlflow"
+      - "POSTGRES_PASSWORD=mlflow"
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+    environment: 
+      - "MINIO_ACCESS_KEY=access_key"
+      - "MINIO_SECRET_KEY=secret_key"
+      - "MINIO_REGION_NAME=k8s00-local"
+    entrypoint: minio server /data
+
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment: 
+      - "BACKEND_URI=postgresql://mlflow:mlflow@postgres"
+      - "MLFLOW_S3_ENDPOINT_URL=http://minio:9000"
+      - "ARTIFACT_ROOT=s3://mlflow-artifacts/"
+      - "AWS_ACCESS_KEY_ID=access_key"
+      - "AWS_SECRET_ACCESS_KEY=secret_key"
+    depends_on:
+      - postgres
+      - minio
+
+  experiment:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["python", "/app/mlflow_test.py"]
+    environment: 
+      - "MLFLOW_URI=http://mlflow:5000"
+      - "MLFLOW_S3_ENDPOINT_URL=http://minio:9000"
+      - "AWS_ACCESS_KEY_ID=access_key"
+      - "AWS_SECRET_ACCESS_KEY=secret_key"
+    volumes: 
+      - .:/app
+    depends_on:
+      - mlflow
