@@ -7,6 +7,7 @@ RUN apt-get update && apt-get -y install --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 # Install MLFlow
 RUN pip install \
+    psycopg2-binary \
     mlflow \
     boto3
 
